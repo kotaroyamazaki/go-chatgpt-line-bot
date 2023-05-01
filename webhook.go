@@ -117,7 +117,11 @@ func Webhook(w http.ResponseWriter, r *http.Request) {
 				}
 
 				// logging
-				logger.Info("processing result", zap.String("line_user_id", e.Source.UserID), zap.String("line_display_name", prof.DisplayName), zap.String("line_message_id", message.ID), zap.String("line_text_message", query), zap.String("chat_gpt_reply_message", answer))
+				logger.Info("ChatGPT reply sent",
+					zap.String("line_user_id", e.Source.UserID),
+					zap.String("line_display_name", prof.DisplayName),
+					zap.String("line_message_id", message.ID),
+					zap.String("chat_gpt_reply_message", answer))
 
 				reply := linebot.NewTextMessage(answer)
 				_, err = bot.ReplyMessage(e.ReplyToken, reply).Do()
