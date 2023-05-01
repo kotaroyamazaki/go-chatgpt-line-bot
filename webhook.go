@@ -14,6 +14,10 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	conversationExpirationTime = 30 * time.Minute
+)
+
 func Webhook(w http.ResponseWriter, r *http.Request) {
 	config := zap.NewProductionConfig()
 	config.EncoderConfig.LevelKey = "severity"
@@ -73,7 +77,7 @@ func Webhook(w http.ResponseWriter, r *http.Request) {
 				if conv == nil {
 					conv = &firestore.Conversation{
 						Messages:  make([]*firestore.Message, 0),
-						ExpiresAt: time.Now().Add(30 * time.Minute),
+						ExpiresAt: time.Now().Add(conversationExpirationTime),
 					}
 				}
 
