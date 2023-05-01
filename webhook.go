@@ -29,14 +29,14 @@ func Webhook(w http.ResponseWriter, r *http.Request) {
 		os.Getenv("LINE_CHANNEL_ACCESS_TOKEN"),
 	)
 	if err != nil {
-		http.Error(w, "Error init line bot", http.StatusBadRequest)
+		http.Error(w, "Failed to initialize Line bot", http.StatusBadRequest)
 		logger.Error("failed to init line bot", zap.Error(err))
 		return
 	}
 
 	events, err := bot.ParseRequest(r)
 	if err != nil {
-		http.Error(w, "Error parse request", http.StatusBadRequest)
+		http.Error(w, "Failed to parse Line request", http.StatusBadRequest)
 		logger.Error("failed to parse request", zap.Error(err))
 		return
 	}
@@ -57,7 +57,7 @@ func Webhook(w http.ResponseWriter, r *http.Request) {
 
 				firestoreCli, err := firestore.New(ctx, os.Getenv("GCP_PROJECT_ID"))
 				if err != nil {
-					http.Error(w, "Error initializing firestore", http.StatusInternalServerError)
+					http.Error(w, "Failed to initialize Firestore", http.StatusInternalServerError)
 					logger.Error("failed to initialize firestore", zap.Error(err))
 					return
 				}
@@ -66,7 +66,7 @@ func Webhook(w http.ResponseWriter, r *http.Request) {
 				// firestore から会話履歴の取得
 				conv, err := firestoreCli.GetConversation(ctx, e.Source.UserID)
 				if err != nil {
-					http.Error(w, "failed to get conversation from firestore", http.StatusInternalServerError)
+					http.Error(w, "Failed to get conversation from firestore", http.StatusInternalServerError)
 					logger.Error("failed to get conversation from firestore", zap.String("line_user_id", e.Source.UserID), zap.Error(err))
 					return
 				}
@@ -91,7 +91,7 @@ func Webhook(w http.ResponseWriter, r *http.Request) {
 				chatCli := chatgpt.New(os.Getenv("OPENAI_API_KEY"))
 				answer, err := chatCli.Chat(ctx, query, chatgpt.WithMessages(converter.ToGPTMessages(conv.Messages)))
 				if err != nil {
-					http.Error(w, "Error parse request", http.StatusInternalServerError)
+					http.Error(w, "Failed to call ChatGPT API", http.StatusInternalServerError)
 
 					_, repErr := bot.ReplyMessage(e.ReplyToken, linebot.NewTextMessage("💥💥システム側で予期せぬエラーが発生しました💥💥")).Do()
 					if repErr != nil {
@@ -111,7 +111,7 @@ func Webhook(w http.ResponseWriter, r *http.Request) {
 				// firestore に会話履歴を保持
 				err = firestoreCli.SetConversation(ctx, e.Source.UserID, conv)
 				if err != nil {
-					http.Error(w, "Error setting conversation in Firestore", http.StatusInternalServerError)
+					http.Error(w, "Failed to set conversation in Firestore", http.StatusInternalServerError)
 					logger.Error("failed to set conversation in firestore", zap.String("line_user_id", e.Source.UserID), zap.Error(err))
 					return
 				}
@@ -122,7 +122,7 @@ func Webhook(w http.ResponseWriter, r *http.Request) {
 				reply := linebot.NewTextMessage(answer)
 				_, err = bot.ReplyMessage(e.ReplyToken, reply).Do()
 				if err != nil {
-					http.Error(w, "Error parse request", http.StatusInternalServerError)
+					http.Error(w, "Failed to reply to user", http.StatusInternalServerError)
 					logger.Error("failed to reply", zap.String("line_user_id", e.Source.UserID), zap.String("line_message_id", message.ID), zap.String("line_display_name", prof.DisplayName), zap.String("line_text_message", query), zap.Error(err))
 				}
 			}
