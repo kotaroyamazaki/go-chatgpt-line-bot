@@ -23,7 +23,7 @@ var logger *zap.Logger
 func init() {
 	config := zap.NewProductionConfig()
 	config.EncoderConfig.LevelKey = "severity"
-	logger, _ := config.Build()
+	logger, _ = config.Build()
 	defer logger.Sync()
 }
 
