@@ -103,7 +103,12 @@ func Webhook(w http.ResponseWriter, r *http.Request) {
 				if err != nil {
 					http.Error(w, "Failed to call ChatGPT API", http.StatusInternalServerError)
 
-					_, repErr := bot.ReplyMessage(e.ReplyToken, linebot.NewTextMessage("💥💥システム側で予期せぬエラーが発生しました💥💥")).Do()
+					var repErr error
+					if chatgpt.IsErrorTooManyRequest(err) {
+						_, repErr = bot.ReplyMessage(e.ReplyToken, linebot.NewTextMessage("⚠️API利用制限につき一時的に利用できなくなっている可能性があります。時間を開けて再度ご利用下さい⚠️")).Do()
+					} else {
+						_, repErr = bot.ReplyMessage(e.ReplyToken, linebot.NewTextMessage("💥💥システム側で予期せぬエラーが発生しました💥💥")).Do()
+					}
 					if repErr != nil {
 						logger.Error("failed to reply unexpected error", zap.String("line_user_id", e.Source.UserID), zap.String("line_display_name", prof.DisplayName), zap.String("line_message_id", message.ID), zap.String("line_text_message", query), zap.Error(repErr), zap.NamedError("original error", err))
 						return
