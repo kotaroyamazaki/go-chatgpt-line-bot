@@ -18,7 +18,7 @@ const (
 	conversationExpirationTime = 30 * time.Minute
 )
 
-var logger zap.Logger
+var logger *zap.Logger
 
 func init() {
 	config := zap.NewProductionConfig()
