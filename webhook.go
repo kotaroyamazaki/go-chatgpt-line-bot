@@ -18,12 +18,16 @@ const (
 	conversationExpirationTime = 30 * time.Minute
 )
 
-func Webhook(w http.ResponseWriter, r *http.Request) {
+var logger zap.Logger
+
+func init() {
 	config := zap.NewProductionConfig()
 	config.EncoderConfig.LevelKey = "severity"
 	logger, _ := config.Build()
 	defer logger.Sync()
+}
 
+func Webhook(w http.ResponseWriter, r *http.Request) {
 	bot, err := linebot.New(
 		os.Getenv("LINE_CHANNEL_SECRET"),
 		os.Getenv("LINE_CHANNEL_ACCESS_TOKEN"),
