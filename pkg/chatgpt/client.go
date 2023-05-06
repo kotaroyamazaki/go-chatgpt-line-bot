@@ -2,6 +2,9 @@ package chatgpt
 
 import (
 	"context"
+	"errors"
+	"net/http"
+	"strconv"
 
 	"github.com/sashabaranov/go-openai"
 )
@@ -70,4 +73,18 @@ func (c *client) Chat(ctx context.Context, text string, opts ...Option) (string,
 	}
 
 	return resp.Choices[0].Message.Content, nil
+}
+
+func IsErrorTooManyRequest(err error) bool {
+	var errAPIError *openai.APIError
+	if errors.As(err, &errAPIError) {
+		if errAPIError.Code == nil {
+			return false
+		}
+		code, _ := strconv.Atoi(*errAPIError.Code)
+		if code == http.StatusTooManyRequests {
+			return true
+		}
+	}
+	return false
 }
