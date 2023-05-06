@@ -33,7 +33,7 @@ func Webhook(w http.ResponseWriter, r *http.Request) {
 		os.Getenv("LINE_CHANNEL_ACCESS_TOKEN"),
 	)
 	if err != nil {
-		http.Error(w, "Failed to initialize Line bot", http.StatusBadRequest)
+		http.Error(w, "Failed to initialize Line bot", http.StatusInternalServerError)
 		logger.Error("failed to init line bot", zap.Error(err))
 		return
 	}
