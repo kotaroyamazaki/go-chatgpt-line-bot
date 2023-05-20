@@ -135,6 +135,7 @@ func Webhook(w http.ResponseWriter, r *http.Request) {
 				logger.Info("ChatGPT reply sent",
 					zap.String("line_user_id", e.Source.UserID),
 					zap.String("line_display_name", prof.DisplayName),
+					zap.String("line_text_message", query),
 					zap.String("line_message_id", message.ID),
 					zap.String("chat_gpt_reply_message", answer))
 
